@@ -1,6 +1,6 @@
-# Thammatorn Portfolio
+# THAMMATORN Portfolio
 
-A one-screen portfolio page with a full-screen WebGL fluid background. The word `Thammatorn` is an invisible but real obstacle, so the fluid flows around the letters instead of just sitting behind them.
+A one-screen portfolio page with a full-screen WebGL fluid background. The word `THAMMATORN` is an invisible but real obstacle, so the fluid flows around the letters instead of just sitting behind them.
 
 ## Run it
 
@@ -42,10 +42,10 @@ The HTML `h1` is still there for semantics, but its paint is transparent. Its cu
 - `Helvetica Neue`, `Helvetica`, or `Arial`
 - Font weight `300`
 - Letter spacing `0.02em`
-- Desktop size `clamp(3.75rem, 15vw, 14rem)`
-- Mobile size `clamp(3.1rem, 16vw, 6rem)`
+- Desktop size `clamp(2.75rem, 10vw, 10rem)`
+- Mobile size `clamp(2.25rem, 10vw, 4.5rem)`
 
-The simulation reads those computed font settings, draws `Thammatorn` character by character onto a small Canvas 2D mask, then uploads it as an `R8` WebGL texture. That mask is used by the divergence, pressure, gradient, advection, and display shaders, which keeps velocity and dye from passing through the letters.
+The simulation reads those computed font settings, draws `THAMMATORN` character by character onto a small Canvas 2D mask, then uploads it as an `R8` WebGL texture. That mask is used by the divergence, pressure, gradient, advection, and display shaders, which keeps velocity and dye from passing through the letters.
 
 ## Fluid loop
 

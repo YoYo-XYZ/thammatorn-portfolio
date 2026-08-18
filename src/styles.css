@@ -74,7 +74,7 @@ a {
   margin: 0;
   color: transparent;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: clamp(3.75rem, 15vw, 14rem);
+  font-size: clamp(2.75rem, 10vw, 10rem);
   font-weight: 300;
   line-height: 0.86;
   letter-spacing: 0.02em;
@@ -127,7 +127,7 @@ a {
 
   .hero-title {
     max-width: calc(100vw - 1.5rem);
-    font-size: clamp(3.1rem, 16vw, 6rem);
+    font-size: clamp(2.25rem, 10vw, 4.5rem);
   }
 }
 

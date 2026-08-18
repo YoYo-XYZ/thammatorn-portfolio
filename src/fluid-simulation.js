@@ -72,8 +72,18 @@ uniform sampler2D uVelocity;
 uniform sampler2D uObstacle;
 out vec4 outColor;
 
+bool isSolid (vec2 uv) {
+    return texture(uObstacle, uv).r > 0.5;
+}
+
 void main () {
-    if (texture(uObstacle, vUv).r > 0.5) {
+    int solidNeighbors = 0;
+    if (isSolid(vL)) solidNeighbors += 1;
+    if (isSolid(vR)) solidNeighbors += 1;
+    if (isSolid(vT)) solidNeighbors += 1;
+    if (isSolid(vB)) solidNeighbors += 1;
+
+    if (isSolid(vUv) || solidNeighbors >= 2) {
         outColor = vec4(0.0);
         return;
     }
@@ -102,9 +112,19 @@ uniform float curl;
 uniform float dt;
 out vec4 outColor;
 
+bool isSolid (vec2 uv) {
+    return texture(uObstacle, uv).r > 0.5;
+}
+
 void main () {
-    if (texture(uObstacle, vUv).r > 0.5) {
+    if (isSolid(vUv)) {
         outColor = vec4(0.0, 0.0, 0.0, 1.0);
+        return;
+    }
+
+    // Avoid amplifying mask and stencil noise directly at the obstacle boundary.
+    if (isSolid(vL) || isSolid(vR) || isSolid(vT) || isSolid(vB)) {
+        outColor = texture(uVelocity, vUv);
         return;
     }
 
@@ -138,12 +158,12 @@ uniform sampler2D uVelocity;
 uniform sampler2D uObstacle;
 out vec4 outColor;
 
-bool isSolid (vec2 uv) {
-    return texture(uObstacle, uv).r > 0.5;
+float obstacleAt (vec2 uv) {
+    return texture(uObstacle, uv).r;
 }
 
 void main () {
-    if (isSolid(vUv)) {
+    if (obstacleAt(vUv) > 0.95) {
         outColor = vec4(0.0);
         return;
     }
@@ -153,11 +173,19 @@ void main () {
     float R = texture(uVelocity, vR).x;
     float T = texture(uVelocity, vT).y;
     float B = texture(uVelocity, vB).y;
+    float obstacleL = obstacleAt(vL);
+    float obstacleR = obstacleAt(vR);
+    float obstacleT = obstacleAt(vT);
+    float obstacleB = obstacleAt(vB);
 
-    if (vL.x < 0.0 || isSolid(vL)) L = -C.x;
-    if (vR.x > 1.0 || isSolid(vR)) R = -C.x;
-    if (vT.y > 1.0 || isSolid(vT)) T = -C.y;
-    if (vB.y < 0.0 || isSolid(vB)) B = -C.y;
+    if (vL.x < 0.0) L = -C.x;
+    else L = mix(L, -C.x, obstacleL);
+    if (vR.x > 1.0) R = -C.x;
+    else R = mix(R, -C.x, obstacleR);
+    if (vT.y > 1.0) T = -C.y;
+    else T = mix(T, -C.y, obstacleT);
+    if (vB.y < 0.0) B = -C.y;
+    else B = mix(B, -C.y, obstacleB);
 
     float divergence = 0.5 * (R - L + T - B);
     outColor = vec4(divergence, 0.0, 0.0, 1.0);
@@ -177,13 +205,17 @@ uniform sampler2D uDivergence;
 uniform sampler2D uObstacle;
 out vec4 outColor;
 
+float obstacleAt (vec2 uv) {
+    return texture(uObstacle, uv).r;
+}
+
 float pressureAt (vec2 uv, float center) {
-    return texture(uObstacle, uv).r > 0.5 ? center : texture(uPressure, uv).x;
+    return mix(texture(uPressure, uv).x, center, obstacleAt(uv));
 }
 
 void main () {
     float C = texture(uPressure, vUv).x;
-    if (texture(uObstacle, vUv).r > 0.5) {
+    if (obstacleAt(vUv) > 0.95) {
         outColor = vec4(0.0);
         return;
     }
@@ -211,12 +243,16 @@ uniform sampler2D uVelocity;
 uniform sampler2D uObstacle;
 out vec4 outColor;
 
+float obstacleAt (vec2 uv) {
+    return texture(uObstacle, uv).r;
+}
+
 float pressureAt (vec2 uv, float center) {
-    return texture(uObstacle, uv).r > 0.5 ? center : texture(uPressure, uv).x;
+    return mix(texture(uPressure, uv).x, center, obstacleAt(uv));
 }
 
 void main () {
-    if (texture(uObstacle, vUv).r > 0.5) {
+    if (obstacleAt(vUv) > 0.95) {
         outColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }
@@ -228,6 +264,18 @@ void main () {
     float B = pressureAt(vB, C);
     vec2 velocity = texture(uVelocity, vUv).xy;
     velocity -= vec2(R - L, T - B);
+
+    vec2 obstacleGradient = vec2(
+        obstacleAt(vR) - obstacleAt(vL),
+        obstacleAt(vT) - obstacleAt(vB)
+    );
+    float gradientLength = length(obstacleGradient);
+    float boundaryWeight = smoothstep(0.02, 0.25, gradientLength);
+    if (boundaryWeight > 0.0) {
+        vec2 normal = obstacleGradient / gradientLength;
+        velocity -= normal * dot(velocity, normal) * boundaryWeight;
+    }
+
     outColor = vec4(velocity, 0.0, 1.0);
 }
 `;
@@ -244,18 +292,21 @@ uniform float dt;
 uniform float dissipation;
 out vec4 outColor;
 
+float obstacleAt (vec2 uv) {
+    return texture(uObstacle, uv).r;
+}
+
 void main () {
-    if (texture(uObstacle, vUv).r > 0.5) {
+    if (obstacleAt(vUv) > 0.95) {
         outColor = vec4(0.0);
         return;
     }
 
     vec2 coord = vUv - dt * texture(uVelocity, vUv).xy * texelSize;
     vec4 result = texture(uSource, coord);
+    float backtraceObstacle = obstacleAt(coord);
 
-    if (texture(uObstacle, coord).r > 0.5) {
-        result = texture(uSource, vUv);
-    }
+    result = mix(result, texture(uSource, vUv), backtraceObstacle);
 
     float decay = 1.0 + dissipation * dt;
     outColor = result / decay;
@@ -500,10 +551,11 @@ class FluidSimulation {
   }
 
   updateObstacleTexture() {
-    if (!this.simSize) return;
+    if (!this.simSize || !this.dyeSize) return;
 
-    const width = this.simSize.width;
-    const height = this.simSize.height;
+    // Keep diagonal and curved glyph edges detailed before the solver samples them.
+    const width = this.dyeSize.width;
+    const height = this.dyeSize.height;
     const context = this.maskCanvas.getContext("2d");
     const bounds = this.canvas.getBoundingClientRect();
     const titleStyle = getComputedStyle(this.title);
@@ -580,9 +632,11 @@ class FluidSimulation {
 
   isSolid(x, y) {
     if (!this.maskData || !this.simSize) return false;
-    const px = clamp(Math.floor(x * this.simSize.width), 0, this.simSize.width - 1);
-    const py = clamp(Math.floor((1 - y) * this.simSize.height), 0, this.simSize.height - 1);
-    return this.maskData[(py * this.simSize.width + px) * 4] > 100;
+    const width = this.maskCanvas.width;
+    const height = this.maskCanvas.height;
+    const px = clamp(Math.floor(x * width), 0, width - 1);
+    const py = clamp(Math.floor((1 - y) * height), 0, height - 1);
+    return this.maskData[(py * width + px) * 4] > 100;
   }
 
   splat(x, y, deltaX, deltaY, color) {
