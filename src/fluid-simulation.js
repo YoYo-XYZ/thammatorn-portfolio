@@ -334,8 +334,12 @@ uniform float sunraysWeight;
 uniform bool transparent;
 out vec4 outColor;
 
+float obstacleAt (vec2 uv) {
+    return smoothstep(0.4, 0.6, texture(uObstacle, uv).r);
+}
+
 vec3 fluidAt (vec2 uv) {
-    float obstacle = smoothstep(0.4, 0.6, texture(uObstacle, uv).r);
+    float obstacle = obstacleAt(uv);
     return texture(uTexture, uv).rgb * (1.0 - obstacle);
 }
 
@@ -377,6 +381,9 @@ void main () {
         }
         fluid += fluid * illumination * sunraysWeight * 0.12;
     }
+
+    // Bloom samples neighboring fluid, so mask post-processing back out of the obstacle.
+    fluid *= 1.0 - obstacleAt(vUv);
 
     vec3 color = transparent ? fluid : background + fluid;
 
