@@ -1,14 +1,17 @@
 import "./styles.css";
+import { attachDebugControls } from "./debug-controls.js";
 import { FluidSimulation } from "./fluid-simulation.js";
 
 const shell = document.querySelector(".portfolio-shell");
 const canvas = document.querySelector(".fluid-canvas");
 const title = document.querySelector(".hero-title");
+const debugPanel = document.querySelector(".debug-panel");
 
 let simulation;
 
 try {
   simulation = new FluidSimulation(canvas, title);
+  attachDebugControls(debugPanel, simulation);
   simulation.setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
   const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -21,11 +24,11 @@ try {
   }
 
   document.addEventListener("visibilitychange", () => {
-    simulation.setPaused(document.hidden);
+    simulation.setVisibilityPaused(document.hidden);
   });
 
   window.addEventListener("resize", () => simulation.resize(), { passive: true });
-  document.fonts?.ready?.then(() => simulation.resize());
+  document.fonts?.ready?.then(() => simulation.resize(true));
 } catch (error) {
   console.error("Unable to initialize the fluid background.", error);
   shell.classList.add("is-fallback");

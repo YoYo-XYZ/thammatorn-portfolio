@@ -21,6 +21,309 @@
         </p>
       </section>
 
+      <aside class="debug-panel" aria-labelledby="debug-panel-title">
+        <header class="debug-panel__header">
+          <div>
+            <span class="debug-panel__eyebrow">Fluid solver / debug</span>
+            <h2 id="debug-panel-title">Control GUI</h2>
+          </div>
+          <button
+            class="debug-panel__toggle"
+            type="button"
+            data-debug-toggle
+            aria-controls="debug-controls"
+            aria-expanded="true"
+          >
+            Hide
+          </button>
+        </header>
+
+        <div id="debug-controls" class="debug-panel__content">
+          <div class="debug-panel__status" role="status" aria-live="polite">
+            <span class="debug-panel__status-dot" data-debug-status-dot aria-hidden="true"></span>
+            <span data-debug-status>live / sim 160 / dye 640</span>
+          </div>
+
+          <details class="debug-group" open>
+            <summary>
+              <span class="debug-group__title">Simulation</span>
+            </summary>
+
+            <label class="debug-control">
+              <span class="debug-control__top">
+                <span>Quality</span>
+                <output data-debug-value-for="dyeResolution">640</output>
+              </span>
+              <select data-config="dyeResolution" aria-label="Dye quality">
+                <option value="1024">high / 1024</option>
+                <option value="640" selected>custom / 640</option>
+                <option value="448">custom / 448</option>
+                <option value="512">medium / 512</option>
+                <option value="256">low / 256</option>
+                <option value="128">very low / 128</option>
+              </select>
+            </label>
+
+            <label class="debug-control">
+              <span class="debug-control__top">
+                <span>Sim resolution</span>
+                <output data-debug-value-for="simResolution">160</output>
+              </span>
+              <select data-config="simResolution" aria-label="Simulation resolution">
+                <option value="256">256</option>
+                <option value="160" selected>160</option>
+                <option value="128">128</option>
+                <option value="112">112</option>
+                <option value="64">64</option>
+              </select>
+            </label>
+
+            <label class="debug-control debug-control--range">
+              <span class="debug-control__top">
+                <span>Density diffusion</span>
+                <output data-debug-value-for="dyeDissipation">0.95</output>
+              </span>
+              <span class="debug-range">
+                <input data-config="dyeDissipation" type="range" min="0" max="4" step="0.01" value="0.95" data-default-value="0.95" data-precision="2" />
+                <span class="debug-range__default" aria-hidden="true"></span>
+              </span>
+            </label>
+
+            <label class="debug-control debug-control--range">
+              <span class="debug-control__top">
+                <span>Velocity diffusion</span>
+                <output data-debug-value-for="velocityDissipation">0.15</output>
+              </span>
+              <span class="debug-range">
+                <input data-config="velocityDissipation" type="range" min="0" max="4" step="0.01" value="0.15" data-default-value="0.15" data-precision="2" />
+                <span class="debug-range__default" aria-hidden="true"></span>
+              </span>
+            </label>
+
+            <label class="debug-control debug-control--range">
+              <span class="debug-control__top">
+                <span>Pressure</span>
+                <output data-debug-value-for="pressure">0.80</output>
+              </span>
+              <span class="debug-range">
+                <input data-config="pressure" type="range" min="0" max="1" step="0.01" value="0.8" data-default-value="0.8" data-precision="2" />
+                <span class="debug-range__default" aria-hidden="true"></span>
+              </span>
+            </label>
+
+            <label class="debug-control debug-control--range">
+              <span class="debug-control__top">
+                <span>Pressure iterations</span>
+                <output data-debug-value-for="pressureIterations">12</output>
+              </span>
+              <span class="debug-range">
+                <input data-config="pressureIterations" type="range" min="1" max="40" step="1" value="12" data-default-value="12" data-precision="0" />
+                <span class="debug-range__default" aria-hidden="true"></span>
+              </span>
+            </label>
+
+            <label class="debug-control debug-control--range">
+              <span class="debug-control__top">
+                <span>Vorticity</span>
+                <output data-debug-value-for="curl">30</output>
+              </span>
+              <span class="debug-range">
+                <input data-config="curl" type="range" min="0" max="50" step="1" value="30" data-default-value="30" data-precision="0" />
+                <span class="debug-range__default" aria-hidden="true"></span>
+              </span>
+            </label>
+
+            <label class="debug-control debug-control--range">
+              <span class="debug-control__top">
+                <span>Splat radius</span>
+                <output data-debug-value-for="splatRadius">0.22</output>
+              </span>
+              <span class="debug-range">
+                <input data-config="splatRadius" type="range" min="0.01" max="1" step="0.01" value="0.22" data-default-value="0.22" data-precision="2" />
+                <span class="debug-range__default" aria-hidden="true"></span>
+              </span>
+            </label>
+
+            <label class="debug-control debug-control--range">
+              <span class="debug-control__top">
+                <span>Splat force</span>
+                <output data-debug-value-for="splatForce">4800</output>
+              </span>
+              <span class="debug-range">
+                <input data-config="splatForce" type="range" min="0" max="10000" step="100" value="4800" data-default-value="4800" data-precision="0" />
+                <span class="debug-range__default" aria-hidden="true"></span>
+              </span>
+            </label>
+
+            <label class="debug-toggle">
+              <span>Shading</span>
+              <input data-config="shading" type="checkbox" checked />
+            </label>
+
+            <label class="debug-toggle">
+              <span>Colorful</span>
+              <input data-config="colorful" type="checkbox" checked />
+            </label>
+          </details>
+
+          <details class="debug-group">
+            <summary>
+              <span class="debug-group__title">Typography</span>
+            </summary>
+
+            <label class="debug-control debug-control--range">
+              <span class="debug-control__top">
+                <span>Text size</span>
+                <output data-typography-value-for="fontSize">128 px</output>
+              </span>
+              <span class="debug-range">
+                <input data-typography="fontSize" type="range" min="32" max="240" step="1" value="128" data-default-value="128" data-precision="0" />
+                <span class="debug-range__default" aria-hidden="true"></span>
+              </span>
+            </label>
+
+            <label class="debug-control debug-control--range">
+              <span class="debug-control__top">
+                <span>Letter spacing</span>
+                <output data-typography-value-for="letterSpacing">0.02 em</output>
+              </span>
+              <span class="debug-range">
+                <input data-typography="letterSpacing" type="range" min="-0.05" max="0.15" step="0.005" value="0.02" data-default-value="0.02" data-precision="3" />
+                <span class="debug-range__default" aria-hidden="true"></span>
+              </span>
+            </label>
+
+            <label class="debug-control">
+              <span class="debug-control__top">
+                <span>Font family</span>
+              </span>
+              <select data-typography="fontFamily" aria-label="Font family">
+                <option value="&quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif" selected>Helvetica Neue</option>
+                <option value="Arial, Helvetica, sans-serif">Arial</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="&quot;Times New Roman&quot;, Times, serif">Times New Roman</option>
+                <option value="&quot;Courier New&quot;, Courier, monospace">Courier New</option>
+                <option value="Impact, Haettenschweiler, &quot;Arial Narrow Bold&quot;, sans-serif">Impact</option>
+              </select>
+            </label>
+
+            <label class="debug-control">
+              <span class="debug-control__top">
+                <span>Font weight</span>
+              </span>
+              <select data-typography="fontWeight" aria-label="Font weight">
+                <option value="200">200 / extra light</option>
+                <option value="300" selected>300 / light</option>
+                <option value="400">400 / regular</option>
+                <option value="500">500 / medium</option>
+                <option value="700">700 / bold</option>
+              </select>
+            </label>
+
+            <label class="debug-control">
+              <span class="debug-control__top">
+                <span>Font style</span>
+              </span>
+              <select data-typography="fontStyle" aria-label="Font style">
+                <option value="normal" selected>normal</option>
+                <option value="italic">italic</option>
+              </select>
+            </label>
+          </details>
+
+          <details class="debug-group">
+            <summary>
+              <span class="debug-group__title">Playback</span>
+            </summary>
+            <label class="debug-toggle">
+              <span>Paused</span>
+              <input data-config="paused" type="checkbox" />
+            </label>
+            <button class="debug-action" type="button" data-debug-action="randomSplats">Random splats</button>
+          </details>
+
+          <details class="debug-group">
+            <summary>
+              <span class="debug-group__title">Bloom</span>
+            </summary>
+
+            <label class="debug-toggle">
+              <span>Enabled</span>
+              <input data-config="bloom" type="checkbox" checked />
+            </label>
+
+            <label class="debug-control debug-control--range">
+              <span class="debug-control__top">
+                <span>Intensity</span>
+                <output data-debug-value-for="bloomIntensity">0.80</output>
+              </span>
+              <span class="debug-range">
+                <input data-config="bloomIntensity" type="range" min="0.1" max="2" step="0.05" value="0.8" data-default-value="0.8" data-precision="2" />
+                <span class="debug-range__default" aria-hidden="true"></span>
+              </span>
+            </label>
+
+            <label class="debug-control debug-control--range">
+              <span class="debug-control__top">
+                <span>Threshold</span>
+                <output data-debug-value-for="bloomThreshold">0.60</output>
+              </span>
+              <span class="debug-range">
+                <input data-config="bloomThreshold" type="range" min="0" max="1" step="0.01" value="0.6" data-default-value="0.6" data-precision="2" />
+                <span class="debug-range__default" aria-hidden="true"></span>
+              </span>
+            </label>
+          </details>
+
+          <details class="debug-group">
+            <summary>
+              <span class="debug-group__title">Sunrays</span>
+            </summary>
+
+            <label class="debug-toggle">
+              <span>Enabled</span>
+              <input data-config="sunrays" type="checkbox" checked />
+            </label>
+
+            <label class="debug-control debug-control--range">
+              <span class="debug-control__top">
+                <span>Weight</span>
+                <output data-debug-value-for="sunraysWeight">1.00</output>
+              </span>
+              <span class="debug-range">
+                <input data-config="sunraysWeight" type="range" min="0.3" max="1" step="0.05" value="1" data-default-value="1" data-precision="2" />
+                <span class="debug-range__default" aria-hidden="true"></span>
+              </span>
+            </label>
+          </details>
+
+          <details class="debug-group">
+            <summary>
+              <span class="debug-group__title">Capture</span>
+            </summary>
+
+            <label class="debug-control debug-control--color">
+              <span>Background color</span>
+              <input data-config="background" type="color" value="#030405" aria-label="Background color" />
+            </label>
+
+            <label class="debug-toggle">
+              <span>Transparent</span>
+              <input data-config="transparent" type="checkbox" />
+            </label>
+
+            <button class="debug-action" type="button" data-debug-action="captureScreenshot">Take screenshot</button>
+          </details>
+
+          <details class="debug-group">
+            <summary>
+              <span class="debug-group__title">Obstacle</span>
+            </summary>
+            <p class="debug-panel__note">The title stays active as a fluid obstacle.</p>
+          </details>
+        </div>
+      </aside>
+
       <div class="webgl-fallback" role="status" aria-live="polite">
         This experience needs WebGL to animate.
       </div>

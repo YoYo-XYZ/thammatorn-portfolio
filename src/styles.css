@@ -84,6 +84,318 @@ a {
   -webkit-text-fill-color: transparent;
 }
 
+.debug-panel {
+  position: fixed;
+  top: max(0.75rem, env(safe-area-inset-top));
+  right: max(0.75rem, env(safe-area-inset-right));
+  z-index: 4;
+  display: flex;
+  width: min(18.75rem, calc(100vw - 1.5rem));
+  max-height: calc(100svh - 1.5rem);
+  flex-direction: column;
+  overflow: hidden;
+  color: rgba(235, 240, 236, 0.84);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  pointer-events: auto;
+  background: rgba(8, 11, 12, 0.84);
+  border: 1px solid rgba(208, 224, 215, 0.13);
+  border-radius: 0.4rem;
+  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(1rem);
+}
+
+.debug-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0.9rem 0.72rem;
+  border-bottom: 1px solid rgba(208, 224, 215, 0.08);
+}
+
+.debug-panel__eyebrow {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: rgba(140, 245, 209, 0.68);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.5625rem;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.debug-panel h2,
+.debug-panel p {
+  margin: 0;
+}
+
+.debug-panel h2 {
+  color: rgba(245, 249, 245, 0.96);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.98rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.debug-panel__toggle,
+.debug-action,
+.debug-panel select,
+.debug-panel input {
+  font: inherit;
+}
+
+.debug-panel__toggle {
+  flex: 0 0 auto;
+  padding: 0.24rem 0.46rem;
+  color: rgba(235, 240, 236, 0.58);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.04);
+  border: 0;
+  border-radius: 999px;
+}
+
+.debug-panel__toggle:hover,
+.debug-panel__toggle:focus-visible,
+.debug-action:hover,
+.debug-action:focus-visible {
+  color: #9bf5d1;
+  border-color: rgba(155, 245, 209, 0.62);
+  outline: none;
+}
+
+.debug-panel__content {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-color: rgba(208, 224, 215, 0.32) transparent;
+  scrollbar-width: thin;
+}
+
+.debug-panel__status {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  color: rgba(235, 240, 236, 0.55);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.debug-panel__status-dot {
+  width: 0.42rem;
+  height: 0.42rem;
+  flex: 0 0 auto;
+  background: #9bf5d1;
+  border-radius: 50%;
+  box-shadow: 0 0 0.55rem rgba(155, 245, 209, 0.9);
+}
+
+.debug-panel__status-dot.is-paused {
+  background: #f6c76d;
+  box-shadow: 0 0 0.55rem rgba(246, 199, 109, 0.72);
+}
+
+.debug-group {
+  padding: 0.72rem 0.9rem 0.78rem;
+  border-top: 1px solid rgba(208, 224, 215, 0.08);
+}
+
+.debug-group summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: rgba(235, 240, 236, 0.66);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.debug-group summary::-webkit-details-marker {
+  display: none;
+}
+
+.debug-group summary::after {
+  color: rgba(235, 240, 236, 0.38);
+  content: "+";
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.debug-group[open] summary {
+  margin-bottom: 0.72rem;
+}
+
+.debug-group[open] summary::after {
+  content: "-";
+}
+
+.debug-group summary:focus-visible {
+  outline: 1px solid rgba(155, 245, 209, 0.74);
+  outline-offset: 0.2rem;
+}
+
+.debug-group__title {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.debug-control {
+  display: block;
+  margin-top: 0.58rem;
+}
+
+.debug-control__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.3rem;
+}
+
+.debug-control output {
+  min-width: 2.2rem;
+  color: rgba(155, 245, 209, 0.88);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  text-align: right;
+}
+
+.debug-panel select {
+  width: 100%;
+  padding: 0.33rem 0.4rem;
+  color: rgba(235, 240, 236, 0.82);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(208, 224, 215, 0.2);
+  border-radius: 0.15rem;
+}
+
+.debug-panel select:focus-visible,
+.debug-panel input:focus-visible {
+  outline: 1px solid rgba(155, 245, 209, 0.74);
+  outline-offset: 1px;
+}
+
+.debug-panel option {
+  color: #e9eee9;
+  background: #101516;
+}
+
+.debug-panel input[type="range"] {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 1rem;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  accent-color: #9bf5d1;
+  cursor: ew-resize;
+}
+
+.debug-range {
+  position: relative;
+  display: block;
+  height: 1rem;
+  margin-top: 0.1rem;
+}
+
+.debug-range__default {
+  position: absolute;
+  top: 50%;
+  left: var(--default-position, 50%);
+  z-index: 1;
+  width: 0.28rem;
+  height: 0.28rem;
+  pointer-events: none;
+  background: rgba(235, 240, 236, 0.52);
+  border: 1px solid rgba(8, 11, 12, 0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(235, 240, 236, 0.24);
+  transform: translate(-50%, -50%);
+}
+
+.debug-panel input[type="range"]::-webkit-slider-runnable-track {
+  height: 2px;
+  background: rgba(208, 224, 215, 0.24);
+  border-radius: 999px;
+}
+
+.debug-panel input[type="range"]::-webkit-slider-thumb {
+  width: 0.72rem;
+  height: 0.72rem;
+  margin-top: -0.3rem;
+  appearance: none;
+  background: #0b1111;
+  border: 2px solid #9bf5d1;
+  border-radius: 50%;
+  box-shadow: 0 0 0.45rem rgba(155, 245, 209, 0.35);
+}
+
+.debug-panel input[type="range"]::-moz-range-track {
+  height: 2px;
+  background: rgba(208, 224, 215, 0.24);
+  border-radius: 999px;
+}
+
+.debug-panel input[type="range"]::-moz-range-thumb {
+  width: 0.46rem;
+  height: 0.46rem;
+  background: #0b1111;
+  border: 2px solid #9bf5d1;
+  border-radius: 50%;
+  box-shadow: 0 0 0.45rem rgba(155, 245, 209, 0.35);
+}
+
+.debug-toggle,
+.debug-control--color {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.2rem;
+}
+
+.debug-toggle input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: #9bf5d1;
+}
+
+.debug-control--color input[type="color"] {
+  width: 2.4rem;
+  height: 1.25rem;
+  padding: 0.1rem;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(208, 224, 215, 0.25);
+  border-radius: 0.15rem;
+}
+
+.debug-action {
+  width: 100%;
+  margin-top: 0.7rem;
+  padding: 0.42rem 0.5rem;
+  color: rgba(235, 240, 236, 0.7);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.04);
+  border: 0;
+  border-radius: 0.25rem;
+}
+
+.debug-panel__note {
+  margin-top: 0.7rem !important;
+  color: rgba(235, 240, 236, 0.42);
+  font-size: 0.625rem;
+  line-height: 1.45;
+}
+
 .webgl-fallback {
   position: absolute;
   right: 1rem;
@@ -107,6 +419,10 @@ a {
   display: block;
 }
 
+.portfolio-shell.is-fallback .debug-panel {
+  display: none;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -128,6 +444,13 @@ a {
   .hero-title {
     max-width: calc(100vw - 1.5rem);
     font-size: clamp(2.25rem, 10vw, 4.5rem);
+  }
+
+  .debug-panel {
+    top: max(0.5rem, env(safe-area-inset-top));
+    right: max(0.5rem, env(safe-area-inset-right));
+    width: calc(100vw - 1rem);
+    max-height: min(75svh, 38rem);
   }
 }
 

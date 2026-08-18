@@ -23,6 +23,7 @@ npm run preview
 - Vite 7 and vanilla JavaScript. No framework.
 - WebGL2 fluid simulation based on Pavel Dobryakov's project.
 - HTML/CSS for the layout and accessible page structure.
+- Right-side debug control GUI for tuning the active solver at runtime.
 - A small offscreen Canvas 2D surface for making the text obstacle mask.
 
 ## Main files
@@ -31,6 +32,7 @@ npm run preview
 | --- | --- |
 | `index.html` | Page metadata, canvas, semantic `h1`, hidden interaction hint, and fallback text. |
 | `src/main.js` | Starts the simulation and handles visibility, resize, fonts, and reduced motion. |
+| `src/debug-controls.js` | Wires the right-side solver controls to the live simulation configuration. |
 | `src/fluid-simulation.js` | WebGL solver, shaders, framebuffers, text mask, input, and animation loop. |
 | `src/styles.css` | Full-screen layout, transparent title, responsive sizing, dark background, and fallback state. |
 | `src/vendor/webgl-fluid-simulation-LICENSE.txt` | MIT license for the adapted solver. |
@@ -67,6 +69,8 @@ The solver uses double-buffered velocity, dye, and pressure textures. It uses `R
 - A small idle splat is added every `3.8s` so the background does not go completely still.
 - The animation pauses when the tab is hidden.
 - Reduced-motion mode stops the continuous loop but still renders explicit pointer input.
+- The right-side Control GUI exposes simulation resolution, dissipation, pressure, vorticity, splat settings, shading, colorful cycling, Bloom, Sunrays, pause, random splats, transparent capture, and background color.
+- The Typography section adjusts title size, letter spacing, font family, weight, and style while refreshing the solver obstacle mask.
 - Desktop device pixel ratio is capped at `1.5`; mobile is capped at `1.25`.
 - Simulation resolution is `160` desktop and `112` mobile. Dye resolution is `640` desktop and `448` mobile.
 - If WebGL is unavailable, the canvas hides and the page shows a simple fallback message.

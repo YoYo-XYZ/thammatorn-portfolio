@@ -317,20 +317,74 @@ const DISPLAY_SHADER = `#version 300 es
 precision highp float;
 
 in vec2 vUv;
+in vec2 vL;
+in vec2 vR;
+in vec2 vT;
+in vec2 vB;
 uniform sampler2D uTexture;
 uniform sampler2D uObstacle;
 uniform vec3 background;
+uniform vec2 texelSize;
+uniform bool shading;
+uniform bool bloom;
+uniform float bloomIntensity;
+uniform float bloomThreshold;
+uniform bool sunrays;
+uniform float sunraysWeight;
+uniform bool transparent;
 out vec4 outColor;
 
+vec3 fluidAt (vec2 uv) {
+    float obstacle = smoothstep(0.4, 0.6, texture(uObstacle, uv).r);
+    return texture(uTexture, uv).rgb * (1.0 - obstacle);
+}
+
 void main () {
-    vec3 dye = texture(uTexture, vUv).rgb;
-    float obstacle = smoothstep(0.4, 0.6, texture(uObstacle, vUv).r);
-    vec3 color = background + dye * (1.0 - obstacle);
+    vec3 fluid = fluidAt(vUv);
+
+    if (shading) {
+        vec3 lc = fluidAt(vL);
+        vec3 rc = fluidAt(vR);
+        vec3 tc = fluidAt(vT);
+        vec3 bc = fluidAt(vB);
+        float dx = length(rc) - length(lc);
+        float dy = length(tc) - length(bc);
+        vec3 normal = normalize(vec3(dx, dy, length(texelSize)));
+        float diffuse = clamp(dot(normal, vec3(0.0, 0.0, 1.0)) + 0.7, 0.7, 1.0);
+        fluid *= diffuse;
+    }
+
+    if (bloom) {
+        vec2 offset = texelSize * 5.0;
+        vec3 blur = fluidAt(vUv - vec2(offset.x, 0.0));
+        blur += fluidAt(vUv + vec2(offset.x, 0.0));
+        blur += fluidAt(vUv - vec2(0.0, offset.y));
+        blur += fluidAt(vUv + vec2(0.0, offset.y));
+        blur *= 0.25;
+        fluid += max(blur - vec3(bloomThreshold), vec3(0.0)) * bloomIntensity;
+    }
+
+    if (sunrays) {
+        vec2 direction = (vUv - vec2(0.5)) * 0.06;
+        vec2 coord = vUv;
+        float illumination = 0.0;
+        float decay = 1.0;
+        for (int index = 0; index < 8; index += 1) {
+            coord -= direction;
+            vec3 sampleColor = fluidAt(coord);
+            illumination += max(max(sampleColor.r, sampleColor.g), sampleColor.b) * decay;
+            decay *= 0.86;
+        }
+        fluid += fluid * illumination * sunraysWeight * 0.12;
+    }
+
+    vec3 color = transparent ? fluid : background + fluid;
 
     // Filmic-style compression keeps bright splats colorful without clipping.
     color = 1.0 - exp(-color * 1.35);
     color = pow(max(color, vec3(0.0)), vec3(0.92));
-    outColor = vec4(color, 1.0);
+    float alpha = transparent ? clamp(max(max(color.r, color.g), color.b) * 1.5, 0.0, 1.0) : 1.0;
+    outColor = vec4(color, alpha);
 }
 `;
 
@@ -350,11 +404,11 @@ class FluidSimulation {
     this.canvas = canvas;
     this.title = title;
     this.gl = canvas.getContext("webgl2", {
-      alpha: false,
+      alpha: true,
       antialias: false,
       depth: false,
       powerPreference: "high-performance",
-      preserveDrawingBuffer: false,
+      preserveDrawingBuffer: true,
       stencil: false,
     });
 
@@ -368,23 +422,36 @@ class FluidSimulation {
 
     this.config = {
       background: [0.012, 0.016, 0.018],
+      bloom: true,
+      bloomIntensity: 0.8,
+      bloomThreshold: 0.6,
+      colorful: true,
       curl: 30,
+      colorUpdateSpeed: 10,
       dyeDissipation: 0.95,
       dyeResolution: window.innerWidth < 700 ? 448 : 640,
       pressure: 0.8,
       pressureIterations: 12,
+      paused: false,
+      shading: true,
       simResolution: window.innerWidth < 700 ? 112 : 160,
       splatForce: 4800,
       splatRadius: 0.22,
+      sunrays: true,
+      sunraysWeight: 1,
+      transparent: false,
       velocityDissipation: 0.15,
     };
 
     this.gl.clearColor(0, 0, 0, 1);
     this.running = false;
     this.paused = false;
+    this.userPaused = false;
+    this.visibilityPaused = false;
     this.reducedMotion = false;
     this.seeded = false;
     this.idleTimer = 0;
+    this.colorUpdateTimer = 0;
     this.lastTime = performance.now();
     this.pointers = new Map();
     this.maskCanvas = document.createElement("canvas");
@@ -536,6 +603,38 @@ class FluidSimulation {
     return true;
   }
 
+  updateConfig(name, value) {
+    if (!(name in this.config)) return;
+
+    if (name === "paused") {
+      this.setPaused(Boolean(value));
+      return;
+    }
+
+    const previousValue = this.config[name];
+    this.config[name] = Array.isArray(value) ? [...value] : value;
+
+    if (previousValue === value) return;
+
+    if (name === "simResolution" || name === "dyeResolution") {
+      const simSize = getResolution(this.config.simResolution, this.canvas.width, this.canvas.height);
+      const dyeSize = getResolution(this.config.dyeResolution, this.canvas.width, this.canvas.height);
+      this.initFramebuffers(simSize, dyeSize);
+      this.updateObstacleTexture();
+      this.seeded = false;
+      this.seed();
+      return;
+    }
+
+    this.render();
+  }
+
+  setTypography(property, value) {
+    if (!["fontFamily", "fontSize", "fontStyle", "fontWeight", "letterSpacing"].includes(property)) return;
+    this.title.style[property] = value;
+    this.resize(true);
+  }
+
   initFramebuffers(simSize, dyeSize) {
     const gl = this.gl;
     this.disposeFramebuffers();
@@ -620,6 +719,27 @@ class FluidSimulation {
     this.render();
   }
 
+  randomSplats(amount = Math.floor(Math.random() * 16) + 5) {
+    for (let index = 0; index < amount; index += 1) {
+      const point = this.freePoint();
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 240 + Math.random() * 460;
+      const color = generateColor(0.28);
+      this.splat(point.x, point.y, Math.cos(angle) * speed, Math.sin(angle) * speed, color);
+    }
+
+    this.render();
+  }
+
+  captureScreenshot() {
+    const link = document.createElement("a");
+    link.download = "fluid.png";
+    link.href = this.canvas.toDataURL("image/png");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
   freePoint() {
     for (let attempt = 0; attempt < 12; attempt += 1) {
       const x = 0.08 + Math.random() * 0.84;
@@ -676,8 +796,25 @@ class FluidSimulation {
   }
 
   setPaused(paused) {
-    this.paused = paused;
-    if (!paused) this.start();
+    this.userPaused = paused;
+    this.config.paused = paused;
+    this.applyPauseState();
+  }
+
+  setVisibilityPaused(paused) {
+    this.visibilityPaused = paused;
+    this.applyPauseState();
+  }
+
+  applyPauseState() {
+    this.paused = this.userPaused || this.visibilityPaused;
+
+    if (this.paused) {
+      this.running = false;
+      this.render();
+    } else {
+      this.start();
+    }
   }
 
   setReducedMotion(reducedMotion) {
@@ -700,6 +837,8 @@ class FluidSimulation {
     this.idleTimer += deltaTime;
 
     if (!this.paused) {
+      this.updateColors(deltaTime);
+
       if (this.idleTimer > 3.8) {
         this.idleTimer = 0;
         const point = this.freePoint();
@@ -712,6 +851,18 @@ class FluidSimulation {
 
     this.render();
     requestAnimationFrame((nextTime) => this.frame(nextTime));
+  }
+
+  updateColors(deltaTime) {
+    if (!this.config.colorful) return;
+
+    this.colorUpdateTimer += deltaTime * this.config.colorUpdateSpeed;
+    if (this.colorUpdateTimer < 1) return;
+
+    this.colorUpdateTimer %= 1;
+    this.pointers.forEach((pointer) => {
+      pointer.color = generateColor();
+    });
   }
 
   step(deltaTime) {
@@ -795,9 +946,17 @@ class FluidSimulation {
     const program = this.programs.display;
     gl.disable(gl.BLEND);
     this.use(program);
+    this.uniform2f(program, "texelSize", 1 / Math.max(this.canvas.width, 1), 1 / Math.max(this.canvas.height, 1));
     this.uniform1i(program, "uTexture", this.dye.read.attach(0));
     this.uniform1i(program, "uObstacle", this.attachObstacle(1));
     this.uniform3f(program, "background", ...this.config.background);
+    this.uniform1i(program, "shading", this.config.shading ? 1 : 0);
+    this.uniform1i(program, "bloom", this.config.bloom ? 1 : 0);
+    this.uniform1f(program, "bloomIntensity", this.config.bloomIntensity);
+    this.uniform1f(program, "bloomThreshold", this.config.bloomThreshold);
+    this.uniform1i(program, "sunrays", this.config.sunrays ? 1 : 0);
+    this.uniform1f(program, "sunraysWeight", this.config.sunraysWeight);
+    this.uniform1i(program, "transparent", this.config.transparent ? 1 : 0);
     this.blit(null);
   }
 
