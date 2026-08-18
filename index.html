@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#030405" />
+    <meta
+      name="description"
+      content="Thammatorn - a personal portfolio experience shaped by fluid motion."
+    />
+    <title>Thammatorn</title>
+  </head>
+  <body>
+    <main class="portfolio-shell" aria-labelledby="portfolio-title">
+      <canvas class="fluid-canvas" aria-hidden="true"></canvas>
+
+      <section class="hero" aria-describedby="interaction-note">
+        <h1 id="portfolio-title" class="hero-title">Thammatorn</h1>
+        <p id="interaction-note" class="visually-hidden">
+          An interactive fluid background. Move your cursor or drag across the screen to move the fluid.
+        </p>
+      </section>
+
+      <div class="webgl-fallback" role="status" aria-live="polite">
+        This experience needs WebGL to animate.
+      </div>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
