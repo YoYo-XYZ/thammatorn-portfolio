@@ -67,9 +67,11 @@ function attachDebugControls(root, simulation) {
   const titleStyle = getComputedStyle(simulation.title);
   const defaultFontSize = Number.parseFloat(titleStyle.fontSize);
   const defaultLetterSpacing = Number.parseFloat(titleStyle.letterSpacing);
+  const defaultWordSpacing = Number.parseFloat(titleStyle.wordSpacing);
   const typographyDefaults = {
     fontSize: defaultFontSize,
     letterSpacing: Number.isFinite(defaultLetterSpacing) ? defaultLetterSpacing / defaultFontSize : 0,
+    wordSpacing: Number.isFinite(defaultWordSpacing) ? defaultWordSpacing / defaultFontSize : 0,
   };
 
   const formatTypographyValue = (control) => {
@@ -106,7 +108,11 @@ function attachDebugControls(root, simulation) {
     const property = control.dataset.typography;
     const value = control.type === "range" ? Number(control.value) : control.value;
     const cssValue =
-      property === "fontSize" ? `${value}px` : property === "letterSpacing" ? `${value}em` : value;
+      property === "fontSize"
+        ? `${value}px`
+        : property === "letterSpacing" || property === "wordSpacing"
+          ? `${value}em`
+          : value;
 
     simulation.setTypography(property, cssValue);
     updateTypographyOutput(control);

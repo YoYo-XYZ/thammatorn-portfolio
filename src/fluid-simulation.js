@@ -637,7 +637,7 @@ class FluidSimulation {
   }
 
   setTypography(property, value) {
-    if (!["fontFamily", "fontSize", "fontStyle", "fontWeight", "letterSpacing"].includes(property)) return;
+    if (!["fontFamily", "fontSize", "fontStyle", "fontWeight", "letterSpacing", "wordSpacing"].includes(property)) return;
     this.title.style[property] = value;
     this.resize(true);
   }
@@ -668,6 +668,7 @@ class FluidSimulation {
     const scale = height / Math.max(bounds.height, 1);
     const fontSize = parseFloat(titleStyle.fontSize) * scale;
     const letterSpacing = parseFloat(titleStyle.letterSpacing) * scale || 0;
+    const wordSpacing = parseFloat(titleStyle.wordSpacing) * scale || 0;
     const text = this.title.textContent.trim();
 
     this.maskCanvas.width = width;
@@ -680,14 +681,14 @@ class FluidSimulation {
 
     let textWidth = 0;
     for (const character of text) {
-      textWidth += context.measureText(character).width;
+      textWidth += context.measureText(character).width + (character === " " ? wordSpacing : 0);
     }
     textWidth += letterSpacing * Math.max(text.length - 1, 0);
 
     let x = (width - textWidth) / 2;
     for (const character of text) {
       context.fillText(character, x, height / 2);
-      x += context.measureText(character).width + letterSpacing;
+      x += context.measureText(character).width + letterSpacing + (character === " " ? wordSpacing : 0);
     }
 
     this.maskData = context.getImageData(0, 0, width, height).data;
