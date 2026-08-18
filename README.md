@@ -41,8 +41,8 @@ npm run preview
 
 The HTML `h1` is still there for semantics, but its paint is transparent. Its current styling is:
 
-- `Helvetica Neue`, `Helvetica`, or `Arial`
-- Font weight `300`
+- `Doto`, with a sans-serif fallback
+- Font weight `10`
 - Letter spacing `0.02em`
 - Desktop size `clamp(2.75rem, 10vw, 10rem)`
 - Mobile size `clamp(2.25rem, 10vw, 4.5rem)`
