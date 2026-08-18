@@ -84,10 +84,10 @@
             <label class="debug-control debug-control--range">
               <span class="debug-control__top">
                 <span>Density diffusion</span>
-                <output data-debug-value-for="dyeDissipation">0.95</output>
+                <output data-debug-value-for="dyeDissipation">0.50</output>
               </span>
               <span class="debug-range">
-                <input data-config="dyeDissipation" type="range" min="0" max="4" step="0.01" value="0.95" data-default-value="0.95" data-precision="2" />
+                <input data-config="dyeDissipation" type="range" min="0" max="4" step="0.01" value="0.5" data-default-value="0.5" data-precision="2" />
                 <span class="debug-range__default" aria-hidden="true"></span>
               </span>
             </label>
@@ -128,10 +128,10 @@
             <label class="debug-control debug-control--range">
               <span class="debug-control__top">
                 <span>Vorticity</span>
-                <output data-debug-value-for="curl">30</output>
+                <output data-debug-value-for="curl">2</output>
               </span>
               <span class="debug-range">
-                <input data-config="curl" type="range" min="0" max="50" step="1" value="30" data-default-value="30" data-precision="0" />
+                <input data-config="curl" type="range" min="0" max="50" step="1" value="2" data-default-value="2" data-precision="0" />
                 <span class="debug-range__default" aria-hidden="true"></span>
               </span>
             </label>
@@ -139,10 +139,10 @@
             <label class="debug-control debug-control--range">
               <span class="debug-control__top">
                 <span>Splat radius</span>
-                <output data-debug-value-for="splatRadius">0.22</output>
+                <output data-debug-value-for="splatRadius">0.80</output>
               </span>
               <span class="debug-range">
-                <input data-config="splatRadius" type="range" min="0.01" max="1" step="0.01" value="0.22" data-default-value="0.22" data-precision="2" />
+                <input data-config="splatRadius" type="range" min="0.01" max="1" step="0.01" value="0.8" data-default-value="0.8" data-precision="2" />
                 <span class="debug-range__default" aria-hidden="true"></span>
               </span>
             </label>
@@ -177,10 +177,10 @@
             <label class="debug-control debug-control--range">
               <span class="debug-control__top">
                 <span>Text size</span>
-                <output data-typography-value-for="fontSize">128 px</output>
+                <output data-typography-value-for="fontSize">120 px</output>
               </span>
               <span class="debug-range">
-                <input data-typography="fontSize" type="range" min="32" max="240" step="1" value="128" data-default-value="128" data-precision="0" />
+                <input data-typography="fontSize" type="range" min="32" max="240" step="1" value="120" data-default-value="120" data-precision="0" />
                 <span class="debug-range__default" aria-hidden="true"></span>
               </span>
             </label>
@@ -188,10 +188,10 @@
             <label class="debug-control debug-control--range">
               <span class="debug-control__top">
                 <span>Letter spacing</span>
-                <output data-typography-value-for="letterSpacing">0.02 em</output>
+                <output data-typography-value-for="letterSpacing">0.100 em</output>
               </span>
               <span class="debug-range">
-                <input data-typography="letterSpacing" type="range" min="-0.05" max="0.15" step="0.005" value="0.02" data-default-value="0.02" data-precision="3" />
+                <input data-typography="letterSpacing" type="range" min="-0.05" max="0.15" step="0.005" value="0.1" data-default-value="0.1" data-precision="3" />
                 <span class="debug-range__default" aria-hidden="true"></span>
               </span>
             </label>
@@ -216,10 +216,10 @@
                 <span>Font weight</span>
               </span>
               <select data-typography="fontWeight" aria-label="Font weight">
-                <option value="10" selected>10 / thin</option>
+                <option value="10">10 / thin</option>
                 <option value="200">200 / extra light</option>
                 <option value="300">300 / light</option>
-                <option value="400">400 / regular</option>
+                <option value="400" selected>400 / regular</option>
                 <option value="500">500 / medium</option>
                 <option value="700">700 / bold</option>
               </select>
