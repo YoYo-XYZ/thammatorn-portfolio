@@ -1,36 +1,15 @@
 import "./styles.css";
-import { attachDebugControls } from "./debug-controls.js";
 import { FluidSimulation } from "./fluid-simulation.js";
 
 const shell = document.querySelector(".portfolio-shell");
 const canvas = document.querySelector(".fluid-canvas");
 const title = document.querySelector(".hero-title");
-const heroCopy = document.querySelector(".hero-copy");
-const debugPanel = document.querySelector(".debug-panel");
-
-const HERO_FADE_START = 0.3;
-const HERO_FADE_END = 0.7;
+const hero = document.querySelector(".hero");
 
 let simulation;
 let resizeFrame = 0;
 
-const updateFluidDomain = () => {
-  const viewportHeight = Math.max(window.innerHeight, 1);
-  const scrollOffset = Math.min(Math.max(window.scrollY, 0), viewportHeight);
-  const scrollProgress = scrollOffset / viewportHeight;
-  const heroOpacity = Math.min(
-    1,
-    Math.max(0, (HERO_FADE_END - scrollProgress) / (HERO_FADE_END - HERO_FADE_START)),
-  );
-
-  shell.style.setProperty("--scroll-offset", `${scrollOffset}px`);
-  heroCopy.style.opacity = heroOpacity;
-  simulation?.setObstacleActive(heroOpacity > 0);
-};
-
-const handleFluidDomainChange = () => {
-  updateFluidDomain();
-
+const handleResize = () => {
   if (resizeFrame) return;
 
   resizeFrame = window.requestAnimationFrame(() => {
@@ -41,11 +20,12 @@ const handleFluidDomainChange = () => {
 
 try {
   simulation = new FluidSimulation(canvas, title);
-  attachDebugControls(debugPanel, simulation);
   simulation.setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
   const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   const handleMotionPreference = (event) => simulation.setReducedMotion(event.matches);
+  let heroVisible = true;
+  const updateVisibility = () => simulation.setVisibilityPaused(document.hidden || !heroVisible);
 
   if (reducedMotionQuery.addEventListener) {
     reducedMotionQuery.addEventListener("change", handleMotionPreference);
@@ -53,13 +33,22 @@ try {
     reducedMotionQuery.addListener(handleMotionPreference);
   }
 
-  document.addEventListener("visibilitychange", () => {
-    simulation.setVisibilityPaused(document.hidden);
-  });
+  document.addEventListener("visibilitychange", updateVisibility);
 
-  window.addEventListener("scroll", handleFluidDomainChange, { passive: true });
-  window.addEventListener("resize", handleFluidDomainChange, { passive: true });
-  handleFluidDomainChange();
+  if (hero && "IntersectionObserver" in window) {
+    const heroObserver = new IntersectionObserver(
+      ([entry]) => {
+        heroVisible = entry.isIntersecting;
+        updateVisibility();
+      },
+      { threshold: 0.01 },
+    );
+    heroObserver.observe(hero);
+  }
+
+  window.addEventListener("resize", handleResize, { passive: true });
+  updateVisibility();
+  simulation.resize(true);
   document.fonts?.ready?.then(() => simulation.resize(true));
 } catch (error) {
   console.error("Unable to initialize the fluid background.", error);

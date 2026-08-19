@@ -1,6 +1,6 @@
 # THAMMATORN Portfolio
 
-A scroll-responsive portfolio page with a WebGL fluid background. The word `THAMMATORN` is an invisible but real obstacle, so the fluid flows around the letters instead of just sitting behind them.
+A long-form portfolio page with a WebGL fluid hero. The title is a real simulation obstacle, so the fluid flows around the letters while the rest of the page follows a chronological research story.
 
 ## Run it
 
@@ -22,32 +22,32 @@ npm run preview
 
 - Vite 7 and vanilla JavaScript. No framework.
 - WebGL2 fluid simulation based on Pavel Dobryakov's project.
-- HTML/CSS for the layout and accessible page structure.
-- Left-side debug control GUI for tuning the active solver at runtime.
+- HTML/CSS for the editorial layout and accessible page structure.
+- Inline technical diagrams for current research and selected projects.
 - A small offscreen Canvas 2D surface for making the text obstacle mask.
 
 ## Main files
 
 | File | What it does |
 | --- | --- |
-| `index.html` | Page metadata, canvas, semantic `h1`, hidden interaction hint, and fallback text. |
-| `src/main.js` | Starts the simulation and handles visibility, resize, scrolling, fonts, and reduced motion. |
-| `src/debug-controls.js` | Wires the left-side solver controls to the live simulation configuration. |
+| `index.html` | Page metadata, portfolio content, inline project visuals, semantic headings, and fallback text. |
+| `src/main.js` | Starts the simulation and handles visibility, resize, fonts, and reduced motion. |
+| `src/debug-controls.js` | Development-only wiring for optional solver controls. |
 | `src/fluid-simulation.js` | WebGL solver, shaders, framebuffers, text mask, input, and animation loop. |
-| `src/styles.css` | Scroll-responsive layout, transparent title, responsive sizing, dark background, and fallback state. |
+| `src/styles.css` | Editorial layout, responsive sizing, technical media styles, and fallback state. |
 | `src/vendor/webgl-fluid-simulation-LICENSE.txt` | MIT license for the adapted solver. |
 
 ## How the title works
 
-The HTML `h1` is still there for semantics, but its paint is transparent. Its current styling is:
+The HTML `h1` is visible for semantics and presentation, and the solver also uses it as an obstacle mask. Its current styling is:
 
-- `Orbitron`, with a sans-serif fallback
-- Font weight `400`
-- Letter spacing `0.1em`
-- Desktop size `120px`
-- Mobile size `clamp(2.25rem, 10vw, 4.5rem)`
+- `Manrope`, with a sans-serif fallback
+- Font weight `600`
+- Tight negative letter spacing
+- Desktop size up to `6rem`
+- Mobile size `clamp(1.55rem, 7.8vw, 4rem)`
 
-The simulation reads those computed font settings, draws `THAMMATORN` character by character onto a small Canvas 2D mask, then uploads it as an `R8` WebGL texture. That mask is used by the divergence, pressure, gradient, advection, and display shaders, which keeps velocity and dye from passing through the letters.
+The simulation reads those computed font settings, draws `Thammatorn Jamraschai` character by character onto a small Canvas 2D mask, then uploads it as an `R8` WebGL texture. That mask is used by the divergence, pressure, gradient, advection, and display shaders, which keeps velocity and dye from passing through the letters.
 
 ## Fluid loop
 
@@ -66,12 +66,10 @@ The solver uses double-buffered velocity, dye, and pressure textures. It uses `R
 
 - Move a mouse or pen across the page to stir the fluid. Clicking is not required.
 - Touch input can drag across the page.
-- Scrolling contracts the fluid domain from the top; the space below it is intentionally blank.
+- The solver pauses when the hero leaves the viewport and resumes when it returns.
 - A small idle splat is added every `3.8s` so the background does not go completely still.
 - The animation pauses when the tab is hidden.
 - Reduced-motion mode stops the continuous loop but still renders explicit pointer input.
-- The left-side Control GUI exposes simulation resolution, dissipation, pressure, vorticity, splat settings, shading, colorful cycling, Bloom, Sunrays, pause, random splats, transparent capture, and background color.
-- The Typography section adjusts title size, letter spacing, font family, weight, and style while refreshing the solver obstacle mask.
 - Desktop device pixel ratio is capped at `1.5`; mobile is capped at `1.25`.
 - Simulation resolution is `160` desktop and `112` mobile. Dye resolution is `640` desktop and `448` mobile.
 - If WebGL is unavailable, the canvas hides and the page shows a simple fallback message.
