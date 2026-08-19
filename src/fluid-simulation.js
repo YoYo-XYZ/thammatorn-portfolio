@@ -1194,8 +1194,13 @@ function getResolution(resolution, width, height) {
   };
 }
 
+const FLUID_HUE_RANGE = {
+  min: 1 / 3,
+  max: 3 / 4,
+};
+
 function generateColor(intensity = 0.22) {
-  const hue = Math.random();
+  const hue = FLUID_HUE_RANGE.min + Math.random() * (FLUID_HUE_RANGE.max - FLUID_HUE_RANGE.min);
   const color = hsvToRgb(hue, 0.9, 1);
   return [color[0] * intensity, color[1] * intensity, color[2] * intensity];
 }
