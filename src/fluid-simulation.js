@@ -712,9 +712,10 @@ class FluidSimulation {
     const titleStyle = getComputedStyle(this.title);
     const scaleX = width / Math.max(bounds.width, 1);
     const scaleY = height / Math.max(bounds.height, 1);
+    const horizontalScale = scaleX / Math.max(scaleY, Number.EPSILON);
     const fontSize = parseFloat(titleStyle.fontSize) * scaleY;
-    const letterSpacing = parseFloat(titleStyle.letterSpacing) * scaleX || 0;
-    const wordSpacing = parseFloat(titleStyle.wordSpacing) * scaleX || 0;
+    const letterSpacing = parseFloat(titleStyle.letterSpacing) * scaleY || 0;
+    const wordSpacing = parseFloat(titleStyle.wordSpacing) * scaleY || 0;
     const text = this.title.textContent.trim();
     const titleCenterX = (titleBounds.left - bounds.left + titleBounds.width / 2) * scaleX;
     const titleCenterY = (titleBounds.top - bounds.top + titleBounds.height / 2) * scaleY;
@@ -726,6 +727,9 @@ class FluidSimulation {
     context.font = `${titleStyle.fontStyle} ${titleStyle.fontVariant} ${titleStyle.fontWeight} ${fontSize}px ${titleStyle.fontFamily}`;
     context.textBaseline = "middle";
     context.textAlign = "left";
+    context.save();
+    context.translate(titleCenterX, titleCenterY);
+    context.scale(horizontalScale, 1);
 
     let textWidth = 0;
     for (const character of text) {
@@ -733,11 +737,12 @@ class FluidSimulation {
     }
     textWidth += letterSpacing * Math.max(text.length - 1, 0);
 
-    let x = titleCenterX - textWidth / 2;
+    let x = -textWidth / 2;
     for (const character of text) {
-      context.fillText(character, x, titleCenterY);
+      context.fillText(character, x, 0);
       x += context.measureText(character).width + letterSpacing + (character === " " ? wordSpacing : 0);
     }
+    context.restore();
 
     this.maskData = context.getImageData(0, 0, width, height).data;
 
