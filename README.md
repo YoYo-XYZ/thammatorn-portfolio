@@ -41,7 +41,7 @@ npm run preview
 
 The HTML `h1` is still there for semantics, but its paint is transparent. Its current styling is:
 
-- `Doto`, with a sans-serif fallback
+- `Orbitron`, with a sans-serif fallback
 - Font weight `400`
 - Letter spacing `0.1em`
 - Desktop size `120px`

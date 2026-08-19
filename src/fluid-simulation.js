@@ -343,8 +343,16 @@ vec3 fluidAt (vec2 uv) {
     return texture(uTexture, uv).rgb * (1.0 - obstacle);
 }
 
+float sunrayVisibilityAt (vec2 uv) {
+    vec3 sampleColor = fluidAt(uv);
+    float brightness = max(max(sampleColor.r, sampleColor.g), sampleColor.b);
+    return 1.0 - min(max(brightness * 20.0, 0.0), 0.8);
+}
+
 void main () {
-    vec3 fluid = fluidAt(vUv);
+    float currentObstacle = obstacleAt(vUv);
+    vec3 sourceFluid = texture(uTexture, vUv).rgb;
+    vec3 fluid = sourceFluid;
 
     if (shading) {
         vec3 lc = fluidAt(vL);
@@ -375,15 +383,16 @@ void main () {
         float decay = 1.0;
         for (int index = 0; index < 8; index += 1) {
             coord -= direction;
-            vec3 sampleColor = fluidAt(coord);
-            illumination += max(max(sampleColor.r, sampleColor.g), sampleColor.b) * decay;
+            if (obstacleAt(coord) > 0.5) break;
+            illumination += sunrayVisibilityAt(coord) * decay;
             decay *= 0.86;
         }
-        fluid += fluid * illumination * sunraysWeight * 0.12;
+        float sunrayContribution = min(illumination * sunraysWeight * 0.12, 0.6);
+        fluid += sourceFluid * sunrayContribution;
     }
 
-    // Bloom samples neighboring fluid, so mask post-processing back out of the obstacle.
-    fluid *= 1.0 - obstacleAt(vUv);
+    // Mask all post-processing back out of the obstacle.
+    fluid *= 1.0 - currentObstacle;
 
     vec3 color = transparent ? fluid : background + fluid;
 
@@ -444,7 +453,7 @@ class FluidSimulation {
       simResolution: window.innerWidth < 700 ? 112 : 160,
       splatForce: 4800,
       splatRadius: 0.8,
-      sunrays: true,
+      sunrays: false,
       sunraysWeight: 1,
       transparent: false,
       velocityDissipation: 0.15,
@@ -639,6 +648,14 @@ class FluidSimulation {
   setTypography(property, value) {
     if (!["fontFamily", "fontSize", "fontStyle", "fontWeight", "letterSpacing", "wordSpacing"].includes(property)) return;
     this.title.style[property] = value;
+
+    if (property === "fontFamily") {
+      Promise.resolve(document.fonts?.load?.(`1em ${value}`, this.title.textContent.trim()))
+        .catch(() => {})
+        .then(() => this.resize(true));
+      return;
+    }
+
     this.resize(true);
   }
 
