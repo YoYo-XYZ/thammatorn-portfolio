@@ -524,7 +524,7 @@ class FluidSimulation {
 
   bindInput() {
     this.handlePointerDown = (event) => {
-      event.preventDefault();
+      if (event.pointerType !== "touch") event.preventDefault();
       const point = this.pointerPosition(event);
       const pointer = {
         color: generateColor(),
@@ -538,7 +538,7 @@ class FluidSimulation {
     };
 
     this.handlePointerMove = (event) => {
-      event.preventDefault();
+      if (event.pointerType !== "touch") event.preventDefault();
       const point = this.pointerPosition(event);
       let pointer = this.pointers.get(event.pointerId);
 
@@ -613,7 +613,7 @@ class FluidSimulation {
 
     const simSize = getResolution(this.config.simResolution, width, height);
     const dyeSize = getResolution(this.config.dyeResolution, width, height);
-    this.initFramebuffers(simSize, dyeSize);
+    this.initFramebuffers(simSize, dyeSize, Boolean(this.dye));
     this.updateObstacleTexture();
     this.render();
     return true;
@@ -659,15 +659,42 @@ class FluidSimulation {
     this.resize(true);
   }
 
-  initFramebuffers(simSize, dyeSize) {
+  initFramebuffers(simSize, dyeSize, preserveState = false) {
     const gl = this.gl;
-    this.disposeFramebuffers();
+    const previous = preserveState && this.dye
+      ? {
+          curl: this.curl,
+          divergence: this.divergence,
+          dye: this.dye,
+          pressure: this.pressure,
+          velocity: this.velocity,
+        }
+      : null;
 
-    this.dye = createDoubleFbo(gl, dyeSize.width, dyeSize.height, gl.RGBA16F, gl.RGBA, gl.HALF_FLOAT, gl.LINEAR);
-    this.velocity = createDoubleFbo(gl, simSize.width, simSize.height, gl.RG16F, gl.RG, gl.HALF_FLOAT, gl.LINEAR);
-    this.divergence = createFbo(gl, simSize.width, simSize.height, gl.R16F, gl.RED, gl.HALF_FLOAT, gl.NEAREST);
-    this.curl = createFbo(gl, simSize.width, simSize.height, gl.R16F, gl.RED, gl.HALF_FLOAT, gl.NEAREST);
-    this.pressure = createDoubleFbo(gl, simSize.width, simSize.height, gl.R16F, gl.RED, gl.HALF_FLOAT, gl.NEAREST);
+    const dye = createDoubleFbo(gl, dyeSize.width, dyeSize.height, gl.RGBA16F, gl.RGBA, gl.HALF_FLOAT, gl.LINEAR);
+    const velocity = createDoubleFbo(gl, simSize.width, simSize.height, gl.RG16F, gl.RG, gl.HALF_FLOAT, gl.LINEAR);
+    const divergence = createFbo(gl, simSize.width, simSize.height, gl.R16F, gl.RED, gl.HALF_FLOAT, gl.NEAREST);
+    const curl = createFbo(gl, simSize.width, simSize.height, gl.R16F, gl.RED, gl.HALF_FLOAT, gl.NEAREST);
+    const pressure = createDoubleFbo(gl, simSize.width, simSize.height, gl.R16F, gl.RED, gl.HALF_FLOAT, gl.NEAREST);
+
+    if (previous) {
+      copyDoubleFbo(gl, previous.dye, dye);
+      copyDoubleFbo(gl, previous.pressure, pressure);
+      copyDoubleFbo(gl, previous.velocity, velocity);
+      deleteDoubleFbo(gl, previous.dye);
+      deleteDoubleFbo(gl, previous.pressure);
+      deleteDoubleFbo(gl, previous.velocity);
+      deleteFbo(gl, previous.divergence);
+      deleteFbo(gl, previous.curl);
+    } else {
+      this.disposeFramebuffers();
+    }
+
+    this.dye = dye;
+    this.velocity = velocity;
+    this.divergence = divergence;
+    this.curl = curl;
+    this.pressure = pressure;
 
     this.simSize = simSize;
     this.dyeSize = dyeSize;
@@ -1171,6 +1198,29 @@ function createDoubleFbo(gl, width, height, internalFormat, format, type, filter
   };
 }
 
+function copyDoubleFbo(gl, source, target) {
+  copyFbo(gl, source.read, target.read);
+  copyFbo(gl, source.write, target.write);
+}
+
+function copyFbo(gl, source, target) {
+  gl.bindFramebuffer(gl.READ_FRAMEBUFFER, source.fbo);
+  gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, target.fbo);
+  gl.blitFramebuffer(
+    0,
+    0,
+    source.width,
+    source.height,
+    0,
+    0,
+    target.width,
+    target.height,
+    gl.COLOR_BUFFER_BIT,
+    gl.LINEAR,
+  );
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
+
 function deleteFbo(gl, target) {
   if (!target) return;
   gl.deleteFramebuffer(target.fbo);
@@ -1184,7 +1234,8 @@ function deleteDoubleFbo(gl, target) {
 }
 
 function getResolution(resolution, width, height) {
-  const aspectRatio = width / Math.max(height, 1);
+  // Keep a collapsing scroll domain from allocating unbounded wide textures.
+  const aspectRatio = Math.min(width / Math.max(height, 1), 4);
   if (aspectRatio >= 1) {
     return {
       height: Math.max(Math.round(resolution), 1),

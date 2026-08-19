@@ -8,6 +8,23 @@ const title = document.querySelector(".hero-title");
 const debugPanel = document.querySelector(".debug-panel");
 
 let simulation;
+let resizeFrame = 0;
+
+const updateFluidDomain = () => {
+  const scrollOffset = Math.min(Math.max(window.scrollY, 0), window.innerHeight);
+  shell.style.setProperty("--scroll-offset", `${scrollOffset}px`);
+};
+
+const handleFluidDomainChange = () => {
+  updateFluidDomain();
+
+  if (resizeFrame) return;
+
+  resizeFrame = window.requestAnimationFrame(() => {
+    resizeFrame = 0;
+    simulation?.resize();
+  });
+};
 
 try {
   simulation = new FluidSimulation(canvas, title);
@@ -27,7 +44,9 @@ try {
     simulation.setVisibilityPaused(document.hidden);
   });
 
-  window.addEventListener("resize", () => simulation.resize(), { passive: true });
+  window.addEventListener("scroll", handleFluidDomainChange, { passive: true });
+  window.addEventListener("resize", handleFluidDomainChange, { passive: true });
+  handleFluidDomainChange();
   document.fonts?.ready?.then(() => simulation.resize(true));
 } catch (error) {
   console.error("Unable to initialize the fluid background.", error);

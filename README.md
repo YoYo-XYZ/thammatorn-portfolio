@@ -1,6 +1,6 @@
 # THAMMATORN Portfolio
 
-A one-screen portfolio page with a full-screen WebGL fluid background. The word `THAMMATORN` is an invisible but real obstacle, so the fluid flows around the letters instead of just sitting behind them.
+A scroll-responsive portfolio page with a WebGL fluid background. The word `THAMMATORN` is an invisible but real obstacle, so the fluid flows around the letters instead of just sitting behind them.
 
 ## Run it
 
@@ -31,10 +31,10 @@ npm run preview
 | File | What it does |
 | --- | --- |
 | `index.html` | Page metadata, canvas, semantic `h1`, hidden interaction hint, and fallback text. |
-| `src/main.js` | Starts the simulation and handles visibility, resize, fonts, and reduced motion. |
+| `src/main.js` | Starts the simulation and handles visibility, resize, scrolling, fonts, and reduced motion. |
 | `src/debug-controls.js` | Wires the left-side solver controls to the live simulation configuration. |
 | `src/fluid-simulation.js` | WebGL solver, shaders, framebuffers, text mask, input, and animation loop. |
-| `src/styles.css` | Full-screen layout, transparent title, responsive sizing, dark background, and fallback state. |
+| `src/styles.css` | Scroll-responsive layout, transparent title, responsive sizing, dark background, and fallback state. |
 | `src/vendor/webgl-fluid-simulation-LICENSE.txt` | MIT license for the adapted solver. |
 
 ## How the title works
@@ -66,6 +66,7 @@ The solver uses double-buffered velocity, dye, and pressure textures. It uses `R
 
 - Move a mouse or pen across the page to stir the fluid. Clicking is not required.
 - Touch input can drag across the page.
+- Scrolling contracts the fluid domain from the top; the space below it is intentionally blank.
 - A small idle splat is added every `3.8s` so the background does not go completely still.
 - The animation pauses when the tab is hidden.
 - Reduced-motion mode stops the continuous loop but still renders explicit pointer input.
