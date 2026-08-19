@@ -69,6 +69,10 @@ a {
   pointer-events: none;
 }
 
+.hero-copy {
+  text-align: center;
+}
+
 .hero-title {
   max-width: calc(100vw - 2rem);
   margin: 0;
@@ -78,10 +82,25 @@ a {
   font-weight: 400;
   line-height: 0.86;
   letter-spacing: 0.1em;
+  mix-blend-mode: screen;
   white-space: nowrap;
   text-align: center;
-  text-shadow: none;
+  text-shadow: 0 0 0.35rem rgba(118, 229, 255, 0.82), 0 0 1rem rgba(33, 136, 255, 0.48);
   -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px rgba(183, 239, 255, 0.9);
+}
+
+.hero-subtext {
+  margin: 1.25rem 0 0;
+  color: transparent;
+  font-family: inherit;
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  mix-blend-mode: screen;
+  text-shadow: 0 0 0.35rem rgba(118, 229, 255, 0.82), 0 0 1rem rgba(33, 136, 255, 0.48);
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px rgba(183, 239, 255, 0.9);
 }
 
 .social-links {

@@ -681,12 +681,16 @@ class FluidSimulation {
     const height = this.dyeSize.height;
     const context = this.maskCanvas.getContext("2d");
     const bounds = this.canvas.getBoundingClientRect();
+    const titleBounds = this.title.getBoundingClientRect();
     const titleStyle = getComputedStyle(this.title);
-    const scale = height / Math.max(bounds.height, 1);
-    const fontSize = parseFloat(titleStyle.fontSize) * scale;
-    const letterSpacing = parseFloat(titleStyle.letterSpacing) * scale || 0;
-    const wordSpacing = parseFloat(titleStyle.wordSpacing) * scale || 0;
+    const scaleX = width / Math.max(bounds.width, 1);
+    const scaleY = height / Math.max(bounds.height, 1);
+    const fontSize = parseFloat(titleStyle.fontSize) * scaleY;
+    const letterSpacing = parseFloat(titleStyle.letterSpacing) * scaleX || 0;
+    const wordSpacing = parseFloat(titleStyle.wordSpacing) * scaleX || 0;
     const text = this.title.textContent.trim();
+    const titleCenterX = (titleBounds.left - bounds.left + titleBounds.width / 2) * scaleX;
+    const titleCenterY = (titleBounds.top - bounds.top + titleBounds.height / 2) * scaleY;
 
     this.maskCanvas.width = width;
     this.maskCanvas.height = height;
@@ -702,9 +706,9 @@ class FluidSimulation {
     }
     textWidth += letterSpacing * Math.max(text.length - 1, 0);
 
-    let x = (width - textWidth) / 2;
+    let x = titleCenterX - textWidth / 2;
     for (const character of text) {
-      context.fillText(character, x, height / 2);
+      context.fillText(character, x, titleCenterY);
       x += context.measureText(character).width + letterSpacing + (character === " " ? wordSpacing : 0);
     }
 
