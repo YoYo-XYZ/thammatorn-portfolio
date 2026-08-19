@@ -5,14 +5,27 @@ import { FluidSimulation } from "./fluid-simulation.js";
 const shell = document.querySelector(".portfolio-shell");
 const canvas = document.querySelector(".fluid-canvas");
 const title = document.querySelector(".hero-title");
+const heroCopy = document.querySelector(".hero-copy");
 const debugPanel = document.querySelector(".debug-panel");
+
+const HERO_FADE_START = 0.3;
+const HERO_FADE_END = 0.7;
 
 let simulation;
 let resizeFrame = 0;
 
 const updateFluidDomain = () => {
-  const scrollOffset = Math.min(Math.max(window.scrollY, 0), window.innerHeight);
+  const viewportHeight = Math.max(window.innerHeight, 1);
+  const scrollOffset = Math.min(Math.max(window.scrollY, 0), viewportHeight);
+  const scrollProgress = scrollOffset / viewportHeight;
+  const heroOpacity = Math.min(
+    1,
+    Math.max(0, (HERO_FADE_END - scrollProgress) / (HERO_FADE_END - HERO_FADE_START)),
+  );
+
   shell.style.setProperty("--scroll-offset", `${scrollOffset}px`);
+  heroCopy.style.opacity = heroOpacity;
+  simulation?.setObstacleActive(heroOpacity > 0);
 };
 
 const handleFluidDomainChange = () => {

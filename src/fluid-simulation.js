@@ -468,6 +468,7 @@ class FluidSimulation {
     this.seeded = false;
     this.idleTimer = 0;
     this.colorUpdateTimer = 0;
+    this.obstacleActive = true;
     this.lastTime = performance.now();
     this.pointers = new Map();
     this.maskCanvas = document.createElement("canvas");
@@ -619,6 +620,15 @@ class FluidSimulation {
     return true;
   }
 
+  setObstacleActive(active) {
+    const nextActive = Boolean(active);
+    if (this.obstacleActive === nextActive) return;
+
+    this.obstacleActive = nextActive;
+    this.updateObstacleTexture();
+    this.render();
+  }
+
   updateConfig(name, value) {
     if (!(name in this.config)) return;
 
@@ -707,44 +717,50 @@ class FluidSimulation {
     const width = this.dyeSize.width;
     const height = this.dyeSize.height;
     const context = this.maskCanvas.getContext("2d");
-    const bounds = this.canvas.getBoundingClientRect();
-    const titleBounds = this.title.getBoundingClientRect();
-    const titleStyle = getComputedStyle(this.title);
-    const scaleX = width / Math.max(bounds.width, 1);
-    const scaleY = height / Math.max(bounds.height, 1);
-    const horizontalScale = scaleX / Math.max(scaleY, Number.EPSILON);
-    const fontSize = parseFloat(titleStyle.fontSize) * scaleY;
-    const letterSpacing = parseFloat(titleStyle.letterSpacing) * scaleY || 0;
-    const wordSpacing = parseFloat(titleStyle.wordSpacing) * scaleY || 0;
-    const text = this.title.textContent.trim();
-    const titleCenterX = (titleBounds.left - bounds.left + titleBounds.width / 2) * scaleX;
-    const titleCenterY = (titleBounds.top - bounds.top + titleBounds.height / 2) * scaleY;
 
     this.maskCanvas.width = width;
     this.maskCanvas.height = height;
     context.clearRect(0, 0, width, height);
-    context.fillStyle = "#ffffff";
-    context.font = `${titleStyle.fontStyle} ${titleStyle.fontVariant} ${titleStyle.fontWeight} ${fontSize}px ${titleStyle.fontFamily}`;
-    context.textBaseline = "middle";
-    context.textAlign = "left";
-    context.save();
-    context.translate(titleCenterX, titleCenterY);
-    context.scale(horizontalScale, 1);
 
-    let textWidth = 0;
-    for (const character of text) {
-      textWidth += context.measureText(character).width + (character === " " ? wordSpacing : 0);
+    if (this.obstacleActive) {
+      const bounds = this.canvas.getBoundingClientRect();
+      const titleBounds = this.title.getBoundingClientRect();
+      const titleStyle = getComputedStyle(this.title);
+      const scaleX = width / Math.max(bounds.width, 1);
+      const scaleY = height / Math.max(bounds.height, 1);
+      const horizontalScale = scaleX / Math.max(scaleY, Number.EPSILON);
+      const fontSize = parseFloat(titleStyle.fontSize) * scaleY;
+      const letterSpacing = parseFloat(titleStyle.letterSpacing) * scaleY || 0;
+      const wordSpacing = parseFloat(titleStyle.wordSpacing) * scaleY || 0;
+      const text = this.title.textContent.trim();
+      const titleCenterX = (titleBounds.left - bounds.left + titleBounds.width / 2) * scaleX;
+      const titleCenterY = (titleBounds.top - bounds.top + titleBounds.height / 2) * scaleY;
+
+      context.fillStyle = "#ffffff";
+      context.font = `${titleStyle.fontStyle} ${titleStyle.fontVariant} ${titleStyle.fontWeight} ${fontSize}px ${titleStyle.fontFamily}`;
+      context.textBaseline = "middle";
+      context.textAlign = "left";
+      context.save();
+      context.translate(titleCenterX, titleCenterY);
+      context.scale(horizontalScale, 1);
+
+      let textWidth = 0;
+      for (const character of text) {
+        textWidth += context.measureText(character).width + (character === " " ? wordSpacing : 0);
+      }
+      textWidth += letterSpacing * Math.max(text.length - 1, 0);
+
+      let x = -textWidth / 2;
+      for (const character of text) {
+        context.fillText(character, x, 0);
+        x += context.measureText(character).width + letterSpacing + (character === " " ? wordSpacing : 0);
+      }
+      context.restore();
+
+      this.maskData = context.getImageData(0, 0, width, height).data;
+    } else {
+      this.maskData = null;
     }
-    textWidth += letterSpacing * Math.max(text.length - 1, 0);
-
-    let x = -textWidth / 2;
-    for (const character of text) {
-      context.fillText(character, x, 0);
-      x += context.measureText(character).width + letterSpacing + (character === " " ? wordSpacing : 0);
-    }
-    context.restore();
-
-    this.maskData = context.getImageData(0, 0, width, height).data;
 
     const gl = this.gl;
     if (!this.obstacleTexture) {
