@@ -91,7 +91,7 @@ a {
   mix-blend-mode: screen;
   white-space: nowrap;
   text-align: center;
-  text-shadow: 0 0 0.35rem rgba(118, 229, 255, 0.82), 0 0 1rem rgba(33, 136, 255, 0.48);
+  text-shadow: 0 0 0.4rem rgba(118, 229, 255, 0.95), 0 0 1.25rem rgba(33, 136, 255, 0.6);
   -webkit-text-fill-color: transparent;
   -webkit-text-stroke: 1px rgba(183, 239, 255, 0.9);
 }
@@ -104,7 +104,7 @@ a {
   letter-spacing: 0.08em;
   line-height: 1.4;
   mix-blend-mode: screen;
-  text-shadow: 0 0 0.35rem rgba(118, 229, 255, 0.82), 0 0 1rem rgba(33, 136, 255, 0.48);
+  text-shadow: 0 0 0.4rem rgba(118, 229, 255, 0.95), 0 0 1.25rem rgba(33, 136, 255, 0.6);
   -webkit-text-fill-color: transparent;
   -webkit-text-stroke: 1px rgba(183, 239, 255, 0.9);
 }
